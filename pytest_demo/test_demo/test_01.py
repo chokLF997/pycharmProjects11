@@ -1,22 +1,45 @@
 import pytest
 import requests
 
+from read_yaml import YamlUtil
+
 
 class Test:
-    def test_login(self):
-        url = "http://121.41.14.39:9097/api/loginS"
-        data = {
-            "username": "20154084",
-            "password": "e10adc3949ba59abbe56e057f20f883e"
+    @pytest.mark.parametrize('args', YamlUtil('demo.yaml').read_yaml())
+    def test_login(self, args):
+        url = args['login']['requests']['url']
+        data = args['login']['requests']['data']
+        r = requests.post(url=url, json=data)
+        print(r.json())
+        assert args['login']['requests']['valicate']['eq']['code'] == r.json()['code']
+
+    @pytest.mark.parametrize('args', YamlUtil('demo.yaml').read_yaml())
+    def test_search(self, args):
+        url = args['search']['requests']['url']
+        params = {
+            "format": "json",
         }
-        header = {
-            "Content-Type": "application/json"
+        data = args['search']['requests']['data']
+        headers = args['search']['requests']['headers']
+        r = requests.post(url=url, params=params, headers=headers, json=data)
+        print(r.json())
+        assert args['search']['requests']['valicate']['eq']['code'] == r.json()['code']
+
+    @pytest.mark.parametrize('args', YamlUtil('demo.yaml').read_yaml())
+    def test_detail(self, args):
+        url = args['detail']['requests']['url']
+        params = {
+            "format": "json",
+            "ReportNum": "2019074000914701"
         }
-        re = requests.post(url=url, data=data, headers=header)
-        print(re.text)
+        headers = args['detail']['requests']['headers']
+        r = requests.get(url=url, params=params, headers=headers)
+        print(r.json())
+        assert args['detail']['requests']['valicate']['eq']['code'] == r.json()['code']
 
 
 if __name__ == '__main__':
     pytest.main()
+
 #     # os.system("allure generate report -o ./allurereport --clean")
 #     # ['-s', '-v', '--alluredir=report']
